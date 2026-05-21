@@ -6,7 +6,7 @@ let jugando = false;
 let esperandoEntrada = false;
 
 let timerIntervalo;
-let tiempoLimite = 4000; 
+let tiempoLimite = 4000; // Tiempo inicial base: 4 segundos
 let tiempoRestante = 0;
 
 // Inicializar el contexto de audio web de forma segura
@@ -18,16 +18,16 @@ const statusDisplay = document.getElementById('game-status');
 const timerBar = document.getElementById('timer-bar');
 const btnStart = document.getElementById('btn-start');
 
-// Cargar el récord guardado en el celular al iniciar
+// Cargar el récord guardado al iniciar
 document.addEventListener('DOMContentLoaded', () => {
-    const recordGuardado = localStorage.getItem('colorpanic_record');
+    const recordGuardado = localStorage.getItem('colorvani_record');
     if (recordGuardado) {
         recordAbsoluto = parseInt(recordGuardado);
         highScoreDisplay.innerText = recordAbsoluto;
     }
 });
 
-// Función para generar sonidos retro sin archivos .mp3 externos
+// Función de sonido
 function reproducirTono(frecuencia, tipo, duracion) {
     try {
         if (!audioCtx) {
@@ -49,22 +49,19 @@ function reproducirTono(frecuencia, tipo, duracion) {
         oscilador.start();
         oscilador.stop(audioCtx.currentTime + duracion);
     } catch (e) {
-        console.log("Audio no soportado aún: ", e);
+        console.log("Audio no soportado: ", e);
     }
 }
 
-// Sonidos específicos para las teclas de colores
 function sonidoBotonColor(id) {
     const frecuencias = [261.63, 293.66, 329.63, 392.00]; 
     reproducirTono(frecuencias[id], 'triangle', 0.25);
 }
 
-// Sonido rápido de tic-tac para meter presión
 function sonidoTicTac() {
     reproducirTono(800, 'square', 0.03);
 }
 
-// Sonido descendente y raspado de derrota
 function sonidoGameOver() {
     try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -92,11 +89,10 @@ function iniciarJuego() {
     jugando = true;
     puntuacion = 0;
     secuenciaJuego = [];
-    tiempoLimite = 4000; 
+    tiempoLimite = 4000; // Reseteamos el tiempo inicial
     currentScoreDisplay.innerText = puntuacion;
     btnStart.style.display = 'none';
     
-    // Tono de inicio
     reproducirTono(523.25, 'sine', 0.1);
     setTimeout(() => reproducirTono(659.25, 'sine', 0.1), 100);
     setTimeout(() => reproducirTono(783.99, 'sine', 0.3), 200);
@@ -112,17 +108,28 @@ function proximaRonda() {
     
     secuenciaJuego.push(Math.floor(Math.random() * 4));
     
-    if (tiempoLimite > 900) {
-        tiempoLimite -= 250; 
-    } else if (tiempoLimite > 500) {
-        tiempoLimite -= 40;  
+    // --- NUEVO: Aumento DRÁSTICO de dificultad por punto ---
+    // El tiempo para responder se reduce agresivamente en cada ronda.
+    if (tiempoLimite > 1000) {
+        // Primeras rondas: baja rápido (4s -> 3.5s -> 3s -> 2.5s -> 2s...)
+        tiempoLimite -= 500; 
+    } else if (tiempoLimite > 600) {
+        // Intermedias: baja un poco más lento pero es letal (2s -> 1.7s -> 1.4s...)
+        tiempoLimite -= 300;  
+    } else if (tiempoLimite > 200) {
+        // Límite extremo de velocidad: baja muy poco pero es casi instantáneo
+        tiempoLimite -= 50;  
     }
+    // tiempoLimite nunca bajará de 150ms para mantenerlo jugable por robots.
 
     mostrarSecuencia();
 }
 
 function mostrarSecuencia() {
     let i = 0;
+    // Acelerar la muestra de la secuencia conforme sube la puntuación
+    let velocidadMuestra = Math.max(150, 550 - (puntuacion * 30));
+
     const intervalo = setInterval(() => {
         iluminarBoton(secuenciaJuego[i]);
         i++;
@@ -132,27 +139,31 @@ function mostrarSecuencia() {
                 statusDisplay.innerText = "¡TU TURNO! ¡RÁPIDO!";
                 statusDisplay.style.color = "#34d399";
                 esperandoEntrada = true;
-                iniciarTemporizador();
-            }, 500);
+                iniciarTemporizadorPresion(); // <-- NUEVO: Temporizador de Muerte Súbita
+            }, 300);
         }
-    }, 550); 
+    }, velocidadMuestra); 
 }
 
 function iluminarBoton(id) {
     const boton = document.getElementById(`btn-${id}`);
     boton.classList.add('active');
     sonidoBotonColor(id); 
+    // Duración del parpadeo más corta a mayor puntuación
+    let duracionParpadeo = Math.max(100, 250 - (puntuacion * 15));
     setTimeout(() => {
         boton.classList.remove('active');
-    }, 250);
+    }, duracionParpadeo);
 }
 
-function iniciarTemporizador() {
+// --- NUEVO: Temporizador de Muerte Súbita por Rapidez ---
+function iniciarTemporizadorPresion() {
     clearInterval(timerIntervalo);
-    tiempoRestante = 100;
+    tiempoRestante = 100; // Porcentaje
     timerBar.style.width = '100%';
     timerBar.style.backgroundColor = '#34d399';
 
+    // Calculamos el paso del temporizador según el límite de tiempo de la ronda actual
     const paso = tiempoLimite / 100;
     let contadorTics = 0;
 
@@ -165,20 +176,27 @@ function iniciarTemporizador() {
         tiempoRestante--;
         timerBar.style.width = `${tiempoRestante}%`;
 
+        // Feedback sonoro de presión
         contadorTics++;
-        if (tiempoRestante < 40 && contadorTics % 4 === 0) {
+        // El tic-tac suena más rápido a medida que queda menos tiempo y la ronda es más difícil
+        let frecuenciaTics = Math.max(1, 4 - Math.floor(puntuacion / 3));
+        if (tiempoRestante < 40 && contadorTics % frecuenciaTics === 0) {
             sonidoTicTac();
         }
 
+        // Feedback visual de peligro extremo
         if (tiempoRestante < 35) {
             timerBar.style.backgroundColor = '#dc2626';
-            statusDisplay.innerText = "¡TIEMPO LÍMITE CASI EXPIRADO!";
-            statusDisplay.style.color = "#dc2626";
+            // Solo actualizamos el estado si no estamos ya mostrando peligro
+            if(statusDisplay.innerText !== "¡MUERTE INMINENTE!") {
+                statusDisplay.innerText = "¡MUERTE INMINENTE!";
+                statusDisplay.style.color = "#dc2626";
+            }
         }
 
         if (tiempoRestante <= 0) {
             clearInterval(timerIntervalo);
-            gameOver("¡Se te acabó el tiempo!");
+            gameOver("¡DEMASIADO LENTO!"); // <-- NUEVO MOTIVO: Muerte por rapidez
         }
     }, paso);
 }
@@ -196,17 +214,19 @@ function pressionarBoton(id) {
     }
     
     if (secuenciaJugador.length === secuenciaJuego.length) {
-        clearInterval(timerIntervalo);
+        clearInterval(timerIntervalo); // Detener el temporizador de presión
         puntuacion++;
         currentScoreDisplay.innerText = puntuacion;
         
+        // Verificar y guardar nuevo récord
         if (puntuacion > recordAbsoluto) {
             recordAbsoluto = puntuacion;
             highScoreDisplay.innerText = recordAbsoluto;
-            localStorage.setItem('colorpanic_record', recordAbsoluto);
+            localStorage.setItem('colorvani_record', recordAbsoluto); // Guarda permanentemente
         }
         
-        setTimeout(proximaRonda, 600);
+        // Pausa breve antes de la siguiente ronda acelerada
+        setTimeout(proximaRonda, 400);
     }
 }
 
@@ -221,6 +241,6 @@ function gameOver(motivo) {
     statusDisplay.innerText = `${motivo} GAME OVER`;
     statusDisplay.style.color = "#ef4444";
     
-    btnStart.innerText = "INTENTAR DE NUEVO";
+    btnStart.innerText = "REINTENTAR DESAFÍO";
     btnStart.style.display = 'inline-block';
 }

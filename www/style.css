@@ -1,0 +1,136 @@
+body {
+    background: #090d16;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: #ffffff;
+    user-select: none;
+}
+
+.game-container {
+    background: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 24px;
+    width: 320px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    text-align: center;
+}
+
+/* Marcadores superiores */
+.scoreboard {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.score-box {
+    background: #1f2937;
+    padding: 10px 15px;
+    border-radius: 12px;
+    flex: 1;
+    margin: 0 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.score-box.record {
+    border: 1px solid #eab308;
+}
+
+.label {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.number {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+.score-box.record .number {
+    color: #eab308;
+}
+
+/* Estado del juego */
+.status-msg {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    min-height: 24px;
+    color: #fbbf24;
+}
+
+/* Barra de Tiempo */
+.timer-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #374151;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 100%;
+    background: #34d399;
+    transition: width 0.1s linear, background-color 0.3s ease;
+}
+
+/* Cuadrícula de Botones de Colores */
+.color-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.color-btn {
+    height: 120px;
+    border-radius: 18px;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.1s ease, transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.color-btn:active {
+    transform: scale(0.95);
+}
+
+/* Colores en apagado y encendido brillante */
+.red    { background: #ef4444; box-shadow: 0 0 0px #ef4444; }
+.blue   { background: #3b82f6; box-shadow: 0 0 0px #3b82f6; }
+.green  { background: #10b981; box-shadow: 0 0 0px #10b981; }
+.yellow { background: #f59e0b; box-shadow: 0 0 0px #f59e0b; }
+
+.red.active    { opacity: 1; box-shadow: 0 0 25px #ef4444; }
+.blue.active   { opacity: 1; box-shadow: 0 0 25px #3b82f6; }
+.green.active  { opacity: 1; box-shadow: 0 0 25px #10b981; }
+.yellow.active { opacity: 1; box-shadow: 0 0 25px #f59e0b; }
+
+/* Botón central principal */
+.btn-main {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 14px;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    transition: background 0.2s;
+}
+
+.btn-main:hover {
+    background: #1d4ed8;
+}

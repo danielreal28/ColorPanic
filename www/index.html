@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColorPanic - Arcade</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="scoreboard">
+            <div class="score-box">
+                <span class="label">PUNTOS</span>
+                <span id="current-score" class="number">0</span>
+            </div>
+            <div class="score-box record">
+                <span class="label">🏆 RÉCORD</span>
+                <span id="high-score" class="number">0</span>
+            </div>
+        </div>
+
+        <div id="game-status" class="status-msg">¡Presiona Iniciar!</div>
+
+        <div class="timer-bar-container">
+            <div id="timer-bar" class="timer-bar"></div>
+        </div>
+
+        <div class="color-grid">
+            <div id="btn-0" class="color-btn red" onclick="pressionarBoton(0)"></div>
+            <div id="btn-1" class="color-btn blue" onclick="pressionarBoton(1)"></div>
+            <div id="btn-2" class="color-btn green" onclick="pressionarBoton(2)"></div>
+            <div id="btn-3" class="color-btn yellow" onclick="pressionarBoton(3)"></div>
+        </div>
+
+        <button id="btn-start" class="btn-main" onclick="iniciarJuego()">INICIAR JUEGO</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

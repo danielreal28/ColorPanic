@@ -1,0 +1,57 @@
+name: Build ColorPanic APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Set up NodeJS 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Inicializar y Crear package.json Automáticamente
+        run: |
+          npm init -y
+
+      - name: Instalar Dependencias del Proyecto
+        run: |
+          npm install @capacitor/cli @capacitor/core @capacitor/android
+
+      - name: Crear Proyecto Nativo Real
+        run: |
+          npx cap init "ColorPanic Arcade" "com.danielreal.colorpanic" --web-dir=www
+          npx cap add android
+
+      - name: Forzar Sincronización Completa
+        run: npx cap sync android
+
+      - name: Dar Permisos al Compilador
+        run: |
+          cd android
+          chmod +x gradlew
+
+      - name: Build APK con Gradle
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload Finished APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ColorPanic-DanielReal
+          path: android/app/build/outputs/apk/debug/app-debug.apk
